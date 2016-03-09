@@ -52,6 +52,33 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
+void MainWindow::update_viewer_list(const int index)
+{
+    QComboBox *combobox = this->findChild<QComboBox*>("info_viewer_image");
+    combobox->clear();
+    Files file_tmp;
+    switch(flag_images)
+    {
+    case 0:
+        file_tmp = file_calibration;
+        break;
+    case 1:
+        file_tmp = file_distorted;
+        break;
+    case 2:
+        file_tmp = file_undistorted;
+        break;
+    default:
+        file_tmp = Files();
+    }
+
+    for(size_t n = 0; n < file_tmp.files.size(); ++n)
+    {
+        combobox->addItem(file_tmp.files[n].c_str());
+    }
+    combobox->setEditable(true);
+}
+
 void MainWindow::on_select_images(Files& list_file)
 {
     // set file dialog
@@ -62,9 +89,6 @@ void MainWindow::on_select_images(Files& list_file)
     dialog.selectNameFilter(list_image_formats[0]); // set default file format
 
     // retrieve the filenames
-
-    QComboBox *combobox = this->findChild<QComboBox*>("info_viewer_image");
-    combobox->clear();
     list_file.clear();
     QStringList files;
     if(dialog.exec())
@@ -76,23 +100,21 @@ void MainWindow::on_select_images(Files& list_file)
         QFileInfo file_info(file);
         list_file.setDir(file_info.dir().absolutePath().toStdString() + "/");
         list_file.append(file_info.fileName().toStdString());
-        combobox->addItem(file_info.fileName());
     }
-    combobox->setEditable(true);
+    update_viewer_list(flag_images);
+    on_info_viewer_image_activated(0);
 }
 
 void MainWindow::on_select_calibration_images_clicked()
 {
-    on_select_images(file_calibration);
     flag_images = 0;
-    on_info_viewer_image_activated(0);
+    on_select_images(file_calibration);
 }
 
 void MainWindow::on_select_undistortion_images_clicked()
 {
-    on_select_images(file_distorted);
     flag_images = 1;
-    on_info_viewer_image_activated(0);
+    on_select_images(file_distorted);
 }
 
 void MainWindow::on_trigger_calibration_clicked()
@@ -145,6 +167,7 @@ void MainWindow::on_trigger_undistortion_clicked()
     );
 
     flag_images = 2;
+    update_viewer_list(flag_images);
     on_info_viewer_image_activated(0);
 }
 

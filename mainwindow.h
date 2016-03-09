@@ -53,6 +53,7 @@ private:
 
     void on_select_images(Files& list_file);
     std::string getString(const std::string name_lineedit);
+    void update_viewer_list(const int index);
 
     QStringList list_image_formats;
 
