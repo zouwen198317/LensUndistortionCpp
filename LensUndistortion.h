@@ -5,13 +5,18 @@
 #include <sstream>
 
 #include <opencv2/core.hpp>
-//#include <opencv2/core/utility.hpp>
 
 std::string addPrefixPostfix(
         const std::string& str_original,
         const std::string& str_prefix,
         const std::string& str_postfix
 );
+
+enum pattern_type {
+    chessboard,
+    circle_grid,
+    circle_grid_asymmetric
+};
 
 class LensUndistortion{
 public:
@@ -32,7 +37,8 @@ public:
         const std::vector<std::string>& str_images,
         const int number_of_rows,
         const int number_of_columns,
-        const float pattern_size
+        const float pattern_size,
+        const int flag_pattern_type = pattern_type::chessboard
     );
 
     bool undistortion(
@@ -55,6 +61,8 @@ private:
 public:
     cv::Mat calibration_matrix; //!< 3x3 calibration matrix, intrinsic parameters in other word.
     cv::Mat distortion_coefficients;    //!< lens distortion coefficients as a vector.
+
+    std::string str_suffix_corners;    //!< suffix to be added to corner detection result images.
 };
 
 #endif // __LENS_UNDISTORTION_H__

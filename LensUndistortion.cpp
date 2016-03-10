@@ -23,7 +23,8 @@ std::string addPrefixPostfix(
 
 LensUndistortion::LensUndistortion():
     calibration_matrix(cv::Mat::eye(3, 3, CV_64F)),
-    distortion_coefficients(cv::Mat::zeros(8, 1, CV_64F))
+    distortion_coefficients(cv::Mat::zeros(8, 1, CV_64F)),
+    str_suffix_corners("_corners")
 {
 }
 
@@ -38,7 +39,8 @@ bool LensUndistortion::calibration(
     const std::vector<std::string>& str_images,
     const int number_of_rows,
     const int number_of_columns,
-    const float pattern_size
+    const float pattern_size,
+    const int flag_pattern_type
 )
 {
     size_t number_of_images = str_images.size();
@@ -66,21 +68,39 @@ bool LensUndistortion::calibration(
 
         // detect a set of corners
         std::vector<cv::Point2f> corners;
-        flag_pattern_found[n] = cv::findChessboardCorners(img, grid_size, corners, cv::CALIB_CB_ADAPTIVE_THRESH + cv::CALIB_CB_FAST_CHECK);
+        switch(flag_pattern_type)
+        {
+        case pattern_type::chessboard:
+            break;
+            flag_pattern_found[n] = cv::findChessboardCorners(img, grid_size, corners, cv::CALIB_CB_ADAPTIVE_THRESH + cv::CALIB_CB_FAST_CHECK);
+        case pattern_type::circle_grid:
+            flag_pattern_found[n] = cv::findCirclesGrid(img, grid_size, corners);
+        case pattern_type::circle_grid_asymmetric:
+            flag_pattern_found[n] = cv::findCirclesGrid(img, grid_size, corners, cv::CALIB_CB_ASYMMETRIC_GRID);
+            break;
+        default:
+            flag_pattern_found[n] = cv::findChessboardCorners(img, grid_size, corners, cv::CALIB_CB_ADAPTIVE_THRESH + cv::CALIB_CB_FAST_CHECK);
+        }
+
         std::cout << corners.size() << "/" << number_of_patterns << " corners detected ";
         if(flag_pattern_found[n])
         { // refine the detected corners
-            std::cout << "successed, and refined";
-            cv::cornerSubPix(img, corners, cv::Size(11, 11), cv::Size(-1, -1), cv::TermCriteria(CV_TERMCRIT_EPS + CV_TERMCRIT_ITER, 30, 0.1));
+            std::cout << "successed";
+            if(pattern_type::chessboard)
+            {
+                std::cout << ", and refined";
+                cv::cornerSubPix(img, corners, cv::Size(11, 11), cv::Size(-1, -1), cv::TermCriteria(CV_TERMCRIT_EPS + CV_TERMCRIT_ITER, 30, 0.1));
+            }
         }
         else
         {
-            cv::Mat imgDraw = cv::imread(file_image.c_str(), 1);
-            cv::drawChessboardCorners(imgDraw, grid_size, corners, flag_pattern_found[n]);
-            cv::imwrite((addPrefixPostfix(file_image, "", "_corners")).c_str(), imgDraw);
             std::cout << "failed";
         }
         std::cout << std::endl;
+        // draw the detected corners and save it
+        cv::Mat imgDraw = cv::imread(file_image.c_str(), 1);
+        cv::drawChessboardCorners(imgDraw, grid_size, corners, flag_pattern_found[n]);
+        cv::imwrite((addPrefixPostfix(file_image, "", str_suffix_corners)).c_str(), imgDraw);
 
         // store the detected corners
         points_image[n] = corners;

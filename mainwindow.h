@@ -47,6 +47,9 @@ private slots:
 
     void on_info_viewer_image_activated(int index);
 
+    void on_radio_viewer_input_clicked();
+    void on_radio_viewer_output_clicked();
+
 private:
 
     Ui::MainWindow *ui;
@@ -54,13 +57,30 @@ private:
     void on_select_images(Files& list_file);
     std::string getString(const std::string name_lineedit);
     void update_viewer_list(const int index);
+    bool on_trigger(
+        const std::string error_message,
+        const int flag_src,
+        const int flag_dst,
+        const std::string str_prefix,
+        const std::string str_suffix
+    );
 
+    void GenerateResultName(
+        const Files file_src,
+        const std::string str_prefix,
+        const std::string str_suffix,
+        Files& file_dst
+    );
     QStringList list_image_formats;
 
     Files file_calibration;
+    Files file_detection;
     Files file_distorted;
     Files file_undistorted;
+    std::vector<Files> file_images;
     int flag_images;
+    bool flag_calibration;
+    bool flag_undistortion;
 
     LensUndistortion engine;
 };
