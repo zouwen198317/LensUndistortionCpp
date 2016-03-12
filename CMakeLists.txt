@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8)
-set(PROJ_NAME LensDistortionQt)
+set(PROJ_NAME LensUndistortionQt)
 project(${PROJ_NAME})
 
 # Prevent compilation in-source
